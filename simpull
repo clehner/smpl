@@ -2,43 +2,117 @@
 
 api_base='https://bank.simple.com';
 
+prog=$(basename "$0")
 cookie_jar=~/.simpull_cookies.txt
 cookie_jar_checked=
+cache_dir="/tmp/simpull-$USER"
 
-prog=$(basename "$0")
+opt_verbose=
+opt_nocache=
 
 # Check if a file is accessible to other users
 insecure_file() {
-	[[ -n `find "$1" -perm +066 2>&-; find "$1" -perm /066 2>&-` ]]
+	[[ -n $(
+		find "$1" -maxdepth 0 -perm +066 2>&-
+		find "$1" -maxdepth 0 -perm /066 2>&-
+	) ]]
 }
 
 # Check the cookie file and create it if necessary
 check_cookies() {
-	# check cookie file
-	if [[ -e "$cookie_jar" ]]
+	if [[ ! -e "$cookie_jar" ]]
 	then
-		if [[ -z $cookie_jar_checked ]]
-		then
-			if insecure_file "$cookie_jar"
-			then
-				echo "Warning: $cookie_jar has insecure permissions." >&2
-			fi
-			cookie_jar_checked=1
-		fi
-	else
 		# create the cookie jar
 		touch "$cookie_jar"
 		chmod 600 "$cookie_jar"
-		false
+		return
+	fi
+
+	if [[ -z $cookie_jar_checked ]]
+	then
+		if insecure_file "$cookie_jar"
+		then
+			echo "Warning: $cookie_jar has insecure permissions." >&2
+		fi
+		cookie_jar_checked=1
 	fi
 }
 
-# Make a request
+check_cachedir() {
+	if [[ ! -e "$cache_dir" ]]
+	then
+		mkdir -p "$cache_dir"
+		chmod 700 "$cache_dir"
+		return
+	fi
+
+	if [[ -z $cache_dir_checked ]]
+	then
+		if insecure_file "$cache_dir"
+		then
+			echo "Warning: $cache_dir has insecure permissions." >&2
+		fi
+		cache_dir_checked=1
+	fi
+}
+
 req() {
 	local url="$api_base$1"
 	shift
+	[[ $opt_verbose ]] && echo req $url >&2
 	check_cookies
 	curl -s -b "$cookie_jar" -c "$cookie_jar" "$url" $@
+}
+
+# Make a request, and try to log in if needed
+req_try() {
+	req $@ -i | awk '
+		body==1 { print; next }
+		/^Location:.*signin/ { exit 99 }
+		length($0) == 1 { body=1 }'
+	case $? in
+		99)
+			# Log in and retry the request
+			signin
+			req $@
+	esac
+}
+
+# Make a request
+req_cached() {
+	if [[ -n $opt_nocache ]]
+	then exec req_try $@
+	fi
+
+	check_cachedir
+
+	local path="$1"
+	local cache_file="$cache_dir${path//\//-}"
+	if [[ -e "$cache_file" ]]
+	then cat "$cache_file"
+	else req_try $@ | tee "$cache_file"
+	fi
+}
+
+# Empty the cache
+clean_cache() {
+	rm -rf "$cache_dir"
+}
+
+simple_help() {
+	cat <<EOF
+Usage: $prog <command> [options]
+Commands:
+    help            Get help about commands
+    card            Get card info
+    balance         Get balance
+    linked-accounts Get linked accounts
+    transactions    Get transactions
+    clean           Empty the cache
+Options:
+    -v --verbose    Be more verbose
+    -n --no-cache   Skip cache
+EOF
 }
 
 get_csrf() {
@@ -63,38 +137,12 @@ signin() {
 		--data-urlencode "_csrf=$csrf"
 }
 
-# Make a request, and try to log in if needed
-req_try() {
-	req $@ -i | awk '
-		body==1 { print; next }
-		/^Location:.*signin/ { exit 99 }
-		length($0) == 1 { body=1 }'
-	case $? in
-		99)
-			# Log in and retry the request
-			signin
-			req $@
-	esac
-}
-
-simple_help() {
-	cat <<EOF
-Usage: $prog <command> [args]
-Commands:
-    help            Get help about commands
-    card            Get card info
-    balance         Get balance
-    linked-accounts Get linked accounts
-    transactions    Get transactions
-EOF
-}
-
 simple_card() {
-	req_try '/card'
+	req_cached '/card'
 }
 
 simple_balance() {
-	req '/account/balances'
+	req_cached '/account/balances'
 }
 
 simple_transactions() {
@@ -110,12 +158,31 @@ invalid_command() {
 	exit 127
 }
 
-cmd="$1"; shift
+# handle global flags
+i=1
+cmd=
+args=
+for arg; do
+	case "$arg" in
+		-v|--verbose) opt_verbose=1;;
+		-n|--no-cache) opt_nocache=1;;
+		--) args="$args ${@:i+1}"; break;;
+		-*) args="$args $arg";;
+		*)
+			if [[ -z "$cmd" ]]
+			then cmd="$arg"
+			fi
+	esac
+	((i++))
+done
+set -- "$args"
+
 case "$cmd" in
 	help|'') simple_help $@;;
 	card) simple_card $@;;
 	balance) simple_balance $@;;
 	transactions) simple_transactions $@;;
 	linked-accounts) simple_linked_accounts $@;;
+	clean-cache) clean_cache $@;;
 	*) invalid_command $cmd;;
 esac

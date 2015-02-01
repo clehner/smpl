@@ -1,0 +1,121 @@
+#!/bin/bash
+
+api_base='https://bank.simple.com';
+
+cookie_jar=~/.simpull_cookies.txt
+cookie_jar_checked=
+
+prog=$(basename "$0")
+
+# Check if a file is accessible to other users
+insecure_file() {
+	[[ -n `find "$1" -perm +066 2>&-; find "$1" -perm /066 2>&-` ]]
+}
+
+# Check the cookie file and create it if necessary
+check_cookies() {
+	# check cookie file
+	if [[ -e "$cookie_jar" ]]
+	then
+		if [[ -z $cookie_jar_checked ]]
+		then
+			if insecure_file "$cookie_jar"
+			then
+				echo "Warning: $cookie_jar has insecure permissions." >&2
+			fi
+			cookie_jar_checked=1
+		fi
+	else
+		# create the cookie jar
+		touch "$cookie_jar"
+		chmod 600 "$cookie_jar"
+		false
+	fi
+}
+
+# Make a request
+req() {
+	local url="$api_base$1"
+	shift
+	check_cookies
+	curl -s -b "$cookie_jar" -c "$cookie_jar" "$url" $@
+}
+
+get_csrf() {
+	req '/signin' | sed -n 's/.*name="_csrf" content="\([^"]*\)\".*/\1/p'
+}
+
+# Log in and validate the session.
+signin() {
+	local username password
+	local csrf=$(get_csrf)
+
+	if [[ -z "$csrf" ]]
+	then echo "Cannot find CSRF" >&2; return 1
+	fi
+
+	read -p 'Username: ' username
+	read -rsp 'Passphrase: ' password; echo
+
+	req '/signin' \
+		--data-urlencode "username=$username"\
+		--data-urlencode "password=$password"\
+		--data-urlencode "_csrf=$csrf"
+}
+
+# Make a request, and try to log in if needed
+req_try() {
+	req $@ -i | awk '
+		body==1 { print; next }
+		/^Location:.*signin/ { exit 99 }
+		length($0) == 1 { body=1 }'
+	case $? in
+		99)
+			# Log in and retry the request
+			signin
+			req $@
+	esac
+}
+
+simple_help() {
+	cat <<EOF
+Usage: $prog <command> [args]
+Commands:
+    help            Get help about commands
+    card            Get card info
+    balance         Get balance
+    linked-accounts Get linked accounts
+    transactions    Get transactions
+EOF
+}
+
+simple_card() {
+	req_try '/card'
+}
+
+simple_balance() {
+	req '/account/balances'
+}
+
+simple_transactions() {
+	req '/transactions/data'
+}
+
+simple_linked_accounts() {
+	req '/linked-accounts'
+}
+
+invalid_command() {
+	echo "$prog: '$1' is not a $prog command. See '$prog help'" >&2
+	exit 127
+}
+
+cmd="$1"; shift
+case "$cmd" in
+	help|'') simple_help $@;;
+	card) simple_card $@;;
+	balance) simple_balance $@;;
+	transactions) simple_transactions $@;;
+	linked-accounts) simple_linked_accounts $@;;
+	*) invalid_command $cmd;;
+esac

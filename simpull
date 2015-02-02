@@ -146,16 +146,20 @@ simple_card() {
 simple_balance() {
 	req_cached '/account/balances' | if [[ $opt_raw ]]
 	then cat
-	else JSON.sh | awk '
-		/^\["total"\]/ { total = $2/10000 }
-		/^\["safe_to_spend"\]/ { safe_to_spend = $2/10000 }
-		/^\["pending"\]/ { pending = $2/10000 }
+	else awk '
+		function get_value(key) {
+			if (i = index($0, "\"" key "\":")) {
+				t = substr($0, i + length(key) + 3)
+				if (!match(t, /[^,]*/)) next;
+				return substr(t, RSTART, RLENGTH)/10000
+			}
+		}
+
 		END {
-			printf "%8.2f Total\n", total;
-			printf "%8.2f Pending\n", -pending;
-			printf "%8.2f Available balance\n", safe_to_spend;
-			#0.00 in scheduled activities
-			#0.00 in goals
+			printf "%8.2f Total\n", get_value("total");
+			printf "%8.2f Pending\n", -get_value("pending");
+			printf "%8.2f Available balance\n",\
+				get_value("safe_to_spend");
 		}
 	'
 	fi

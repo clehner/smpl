@@ -118,6 +118,11 @@ render_object() {
 			return object[key]/10000
 		}
 
+		function str(key) {
+			value = object[key]
+			return substr(value, 2, length(value)-2)
+		}
+
 		END { '"$1"' }
 	'
 }
@@ -167,7 +172,15 @@ signin() {
 }
 
 simple_card() {
-	req_cached '/card'
+	req_cached '/card' | render_object '
+		if (str("card_status") == "OPEN")
+			print "✓ Activated"
+		else
+			print "✗ " str("card_status")
+		print "**** **** **** " str("indent")
+		print str("customer_name")
+		print "good thru " str("expiration_date")
+	'
 }
 
 simple_balance()  {

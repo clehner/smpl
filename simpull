@@ -9,6 +9,7 @@ cache_dir="/tmp/simpull-$USER"
 
 opt_verbose=
 opt_nocache=
+opt_raw=
 
 # Check if a file is accessible to other users
 insecure_file() {
@@ -112,6 +113,7 @@ Commands:
 Options:
     -v --verbose    Be more verbose
     -n --no-cache   Skip cache
+    -r --raw        Return raw JSON
 EOF
 }
 
@@ -142,7 +144,21 @@ simple_card() {
 }
 
 simple_balance() {
-	req_cached '/account/balances'
+	req_cached '/account/balances' | if [[ $opt_raw ]]
+	then cat
+	else JSON.sh | awk '
+		/^\["total"\]/ { total = $2/10000 }
+		/^\["safe_to_spend"\]/ { safe_to_spend = $2/10000 }
+		/^\["pending"\]/ { pending = $2/10000 }
+		END {
+			printf "%8.2f Total\n", total;
+			printf "%8.2f Pending\n", -pending;
+			printf "%8.2f Available balance\n", safe_to_spend;
+			#0.00 in scheduled activities
+			#0.00 in goals
+		}
+	'
+	fi
 }
 
 simple_transactions() {
@@ -166,6 +182,7 @@ for arg; do
 	case "$arg" in
 		-v|--verbose) opt_verbose=1;;
 		-n|--no-cache) opt_nocache=1;;
+		-r|--raw) opt_raw=1;;
 		--) args="$args ${@:i+1}"; break;;
 		-*) args="$args $arg";;
 		*)

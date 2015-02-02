@@ -81,15 +81,11 @@ req_try() {
 
 # Make a request
 req_cached() {
-	if [[ -n $opt_nocache ]]
-	then exec req_try $@
-	fi
-
 	check_cachedir
 
 	local path="$1"
 	local cache_file="$cache_dir${path//\//-}"
-	if [[ -s "$cache_file" ]]
+	if [[ -z "$opt_nocache" && -s "$cache_file" ]]
 	then cat "$cache_file"
 	else req_try $@ | tee "$cache_file"
 	fi

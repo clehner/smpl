@@ -89,7 +89,7 @@ req_cached() {
 
 	local path="$1"
 	local cache_file="$cache_dir${path//\//-}"
-	if [[ -e "$cache_file" ]]
+	if [[ -s "$cache_file" ]]
 	then cat "$cache_file"
 	else req_try $@ | tee "$cache_file"
 	fi

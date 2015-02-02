@@ -95,7 +95,7 @@ render_object() {
 	[[ $opt_raw ]] && exec cat
 
 	awk '
-		/^{.*}$/ {
+		/{.*}/ {
 			len = split($0, items, /,"/)
 			if (len > 1) {
 				sub(/^{"/, "", items[1])
@@ -118,9 +118,7 @@ render_object() {
 			value = object[key]
 			return substr(value, 2, length(value)-2)
 		}
-
-		END { '"$1"' }
-	'
+	'"$1"
 }
 
 # Empty the cache
@@ -169,6 +167,7 @@ signin() {
 
 simple_card() {
 	req_cached '/card' | render_object '
+	END {
 		if (str("card_status") == "OPEN")
 			print "✓ Activated"
 		else
@@ -176,14 +175,17 @@ simple_card() {
 		print "**** **** **** " str("indent")
 		print str("customer_name")
 		print "good thru " str("expiration_date")
+	}
 	'
 }
 
 simple_balance()  {
 	req_cached '/account/balances' | render_object '
+	END {
 		printf "%8.2f Total\n", amount("total")
 		printf "%8.2f Pending\n", -amount("pending")
 		printf "%8.2f Available balance\n", amount("safe_to_spend")
+	}
 	'
 }
 
@@ -192,7 +194,19 @@ simple_transactions() {
 }
 
 simple_linked_accounts() {
-	req '/linked-accounts'
+	req_cached '/linked-accounts' | render_object '
+	BEGIN {
+		RS = "},"
+	}
+	/"institution":/ {
+		if (id++) print ""
+		print str("name")
+		print str("institution")
+		print str("account_type"),\
+			str("routing_number"),\
+			str("account_number")
+	}
+	'
 }
 
 invalid_command() {

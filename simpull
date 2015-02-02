@@ -95,6 +95,33 @@ req_cached() {
 	fi
 }
 
+render_object() {
+	[[ $opt_raw ]] && exec cat
+
+	awk '
+		/^{.*}$/ {
+			len = split($0, items, /,"/)
+			if (len > 1) {
+				sub(/^{"/, "", items[1])
+				sub(/}$/, "", items[len])
+			}
+			for (i = 1; i <= len; i++) {
+				item = items[i]
+				j = index(item, "\":")
+				key = substr(item, 1, j-1)
+				value = substr(item, j+2)
+				object[key] = value
+			}
+		}
+
+		function amount(key) {
+			return object[key]/10000
+		}
+
+		END { '"$1"' }
+	'
+}
+
 # Empty the cache
 clean_cache() {
 	rm -rf "$cache_dir"
@@ -143,26 +170,12 @@ simple_card() {
 	req_cached '/card'
 }
 
-simple_balance() {
-	req_cached '/account/balances' | if [[ $opt_raw ]]
-	then cat
-	else awk '
-		function get_value(key) {
-			if (i = index($0, "\"" key "\":")) {
-				t = substr($0, i + length(key) + 3)
-				if (!match(t, /[^,]*/)) next;
-				return substr(t, RSTART, RLENGTH)/10000
-			}
-		}
-
-		END {
-			printf "%8.2f Total\n", get_value("total");
-			printf "%8.2f Pending\n", -get_value("pending");
-			printf "%8.2f Available balance\n",\
-				get_value("safe_to_spend");
-		}
+simple_balance()  {
+	req_cached '/account/balances' | render_object '
+		printf "%8.2f Total\n", amount("total")
+		printf "%8.2f Pending\n", -amount("pending")
+		printf "%8.2f Available balance\n", amount("safe_to_spend")
 	'
-	fi
 }
 
 simple_transactions() {

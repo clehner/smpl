@@ -95,7 +95,11 @@ render_object() {
 	[[ $opt_raw ]] && exec cat
 
 	awk '
-		/{.*}/ {
+		BEGIN {
+			RS = "{\""
+		}
+
+		{
 			len = split($0, items, /,"/)
 			if (len > 1) {
 				sub(/^{"/, "", items[1])
@@ -190,15 +194,26 @@ simple_balance()  {
 }
 
 simple_transactions() {
-	req '/transactions/data'
+	local query=
+	for arg
+	do case "$arg" in -a|--all) query='?all=true'
+	esac done
+
+	req_cached "/transactions/data$query" | render_object '
+	/"raw_description"/ {
+		if (id++) print ""
+		print str("when_recorded_local")
+		print str("description")
+		sign = str("bookkeeping_type") == "debit" ? -1 : 1
+		printf "%8.2f Amount\n", amount("amount") * sign
+		printf "%8.2f Balance\n", amount("running_balance")
+	}
+	'
 }
 
 simple_linked_accounts() {
 	req_cached '/linked-accounts' | render_object '
-	BEGIN {
-		RS = "},"
-	}
-	/"institution":/ {
+	/"transfers":/ {
 		if (id++) print ""
 		print str("name")
 		print str("institution")

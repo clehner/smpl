@@ -120,7 +120,9 @@ render_object() {
 
 		function str(key) {
 			value = object[key]
-			return substr(value, 2, length(value)-2)
+			sub(/^"/, "", value)
+			sub(/"[}\]]*$/, "", value)
+			return value
 		}
 	'"$1"
 }
@@ -195,21 +197,65 @@ simple_balance()  {
 
 simple_transactions() {
 	local query=
+	local format=simple
 	for arg
-	do case "$arg" in -a|--all) query='?all=true'
+	do case "$arg" in
+		--all|-a) query='?all=true';;
+		--format=simple) format=simple;;
+		--format=ledger|-l) format=ledger;;
+		--format=*) echo "Unknown format ${arg#--format=}" >&2
+			return 1;;
 	esac done
 
-	req_cached "/transactions/data$query" | render_object '
-	/"raw_description"/ {
-		if (id++) print ""
-		print str("when_recorded_local")
-		print str("description")
-		sign = str("bookkeeping_type") == "debit" ? -1 : 1
-		printf "%8.2f Amount\n", amount("amount") * sign
-		printf "%8.2f Balance\n", amount("running_balance")
+	req_cached "/transactions/data$query" | case $format in
+		simple) render_object '
+			/"raw_description"/ {
+				if (id++) print ""
+				print str("when_recorded_local")
+				print str("description")
+				sign = str("bookkeeping_type") == "debit" ? -1 : 1
+				printf "%8.2f Amount\n", amount("amount") * sign
+				printf "%8.2f Balance\n", amount("running_balance")
+			}
+		';;
+		ledger) render_object '
+			/"folder"/ {
+				if (id++) print ""
+				description = str("description")
+				datetime = str("when_recorded_local")
+				date = substr(datetime, 1, index(datetime, " ")-1)
+				gsub(/-/, "/", date)
+				sign = str("bookkeeping_type") == "debit" ? 1 : -1
+
+				if (match(description, /^Transfer (to|from) /)) {
+					name = substr(description, RLENGTH+1)
+					account = "Assets:Checking:" name
+
+				} else {
+					account1 = str("folder")
+					if (account1 == "Income")
+						account = account1
+					else {
+						account = sign < 0 ? "Income" : "Expenses"
+						if (account1 && account1 != "Uncategorized")
+							account = account ":" account1
+					}
+					account2 = str("name")
+					if (account2 &&\
+						account2 != "Other" &&\
+						account2 != "Unknown")
+						account = account ":" account2
+					gsub(/\\u0026/, "\\&", account)
+				}
+
+				print date " " description
+				printf "    %-38s  %8s\n", account,\
+					sprintf("$%.2f", amount("amount") * sign)
+				print "    Assets:Checking:Simple"
+			}
+		';;
+		esac
 	}
-	'
-}
 
 simple_linked_accounts() {
 	req_cached '/linked-accounts' | render_object '

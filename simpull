@@ -94,37 +94,7 @@ req_cached() {
 render_object() {
 	[[ $opt_raw ]] && exec cat
 
-	awk '
-		BEGIN {
-			RS = "{\""
-		}
-
-		{
-			len = split($0, items, /,"/)
-			if (len > 1) {
-				sub(/^{"/, "", items[1])
-				sub(/}$/, "", items[len])
-			}
-			for (i = 1; i <= len; i++) {
-				item = items[i]
-				j = index(item, "\":")
-				key = substr(item, 1, j-1)
-				value = substr(item, j+2)
-				object[key] = value
-			}
-		}
-
-		function amount(key) {
-			return object[key]/10000
-		}
-
-		function str(key) {
-			value = object[key]
-			sub(/^"/, "", value)
-			sub(/"[}\]]*$/, "", value)
-			return value
-		}
-	'"$1"
+	awk -f json.awk -f "view/$1"
 }
 
 # Empty the cache
@@ -172,27 +142,11 @@ signin() {
 }
 
 simple_card() {
-	req_cached '/card' | render_object '
-	END {
-		if (str("card_status") == "OPEN")
-			print "✓ Activated"
-		else
-			print "✗ " str("card_status")
-		print "**** **** **** " str("indent")
-		print str("customer_name")
-		print "good thru " str("expiration_date")
-	}
-	'
+	req_cached '/card' | render_object card
 }
 
 simple_balance()  {
-	req_cached '/account/balances' | render_object '
-	END {
-		printf "%8.2f Total\n", amount("total")
-		printf "%8.2f Pending\n", -amount("pending")
-		printf "%8.2f Available balance\n", amount("safe_to_spend")
-	}
-	'
+	req_cached '/account/balances' | render_object balance
 }
 
 simple_transactions() {
@@ -208,66 +162,13 @@ simple_transactions() {
 	esac done
 
 	req_cached "/transactions/data$query" | case $format in
-		simple) render_object '
-			/"raw_description"/ {
-				if (id++) print ""
-				print str("when_recorded_local")
-				print str("description")
-				sign = str("bookkeeping_type") == "debit" ? -1 : 1
-				printf "%8.2f Amount\n", amount("amount") * sign
-				printf "%8.2f Balance\n", amount("running_balance")
-			}
-		';;
-		ledger) render_object '
-			/"folder"/ {
-				if (id++) print ""
-				description = str("description")
-				datetime = str("when_recorded_local")
-				date = substr(datetime, 1, index(datetime, " ")-1)
-				gsub(/-/, "/", date)
-				sign = str("bookkeeping_type") == "debit" ? 1 : -1
-
-				if (match(description, /^Transfer (to|from) /)) {
-					name = substr(description, RLENGTH+1)
-					account = "Assets:Checking:" name
-
-				} else {
-					account1 = str("folder")
-					if (account1 == "Income")
-						account = account1
-					else {
-						account = sign < 0 ? "Income" : "Expenses"
-						if (account1 && account1 != "Uncategorized")
-							account = account ":" account1
-					}
-					account2 = str("name")
-					if (account2 &&\
-						account2 != "Other" &&\
-						account2 != "Unknown")
-						account = account ":" account2
-					gsub(/\\u0026/, "\\&", account)
-				}
-
-				print date " " description
-				printf "    %-38s  %8s\n", account,\
-					sprintf("$%.2f", amount("amount") * sign)
-				print "    Assets:Checking:Simple"
-			}
-		';;
+		simple) render_object transactions-simple;;
+		ledger) render_object transactions-ledger;;
 		esac
 	}
 
 simple_linked_accounts() {
-	req_cached '/linked-accounts' | render_object '
-	/"transfers":/ {
-		if (id++) print ""
-		print str("name")
-		print str("institution")
-		print str("account_type"),\
-			str("routing_number"),\
-			str("account_number")
-	}
-	'
+	req_cached '/linked-accounts' | render_object linked-accounts
 }
 
 invalid_command() {

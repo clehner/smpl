@@ -3,6 +3,7 @@
 api_base='https://bank.simple.com';
 
 prog=$(basename "$0")
+prog_dir=$(dirname "$0")
 cookie_jar=~/.simpull_cookies.txt
 cookie_jar_checked=
 cache_dir="/tmp/simpull-$USER"
@@ -95,7 +96,7 @@ req_cached() {
 render_object() {
 	[[ $opt_raw ]] && exec cat
 
-	awk -f json.awk -f "view/$1"
+	awk -f "$prog_dir/"json.awk -f "$prog_dir/view/$1"
 }
 
 # Empty the cache

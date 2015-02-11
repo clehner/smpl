@@ -177,8 +177,17 @@ signin() {
 	then echo "Cannot find CSRF" >&2; return 1
 	fi
 
-	read -p 'Username: ' username
-	read -rsp 'Passphrase: ' password; echo
+	if [[ -n "$SIMPLE_USERNAME" ]]
+	then username="$SIMPLE_USERNAME"
+	else read -p 'Username: ' username
+	fi
+
+	if [[ -n "$SIMPLE_PASSWORD" ]]
+	then password="$SIMPLE_PASSWORD"
+	elif [[ -n "$SIMPLE_PASSCMD" ]]
+	then password="$(sh -c "$SIMPLE_PASSCMD")"
+	else read -rsp 'Passphrase: ' password; echo
+	fi
 
 	req '/signin' \
 		--data-urlencode "username=$username"\

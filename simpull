@@ -6,6 +6,7 @@ prog=$(basename "$0")
 cookie_jar=~/.simpull_cookies.txt
 cookie_jar_checked=
 cache_dir="/tmp/simpull-$USER"
+watch_interval=30
 
 opt_verbose=
 opt_nocache=
@@ -152,20 +153,31 @@ simple_balance()  {
 simple_transactions() {
 	local query=
 	local format=simple
+	local opt_follow=
 	for arg
 	do case "$arg" in
 		--all|-a) query='?all=true';;
+		--follow|-f) opt_follow=1;;
 		--format=simple) format=simple;;
 		--format=ledger|-l) format=ledger;;
 		--format=*) echo "Unknown format ${arg#--format=}" >&2
 			return 1;;
 	esac done
 
-	req_cached "/transactions/data$query" | case $format in
+	if [[ -z $opt_follow ]]
+	then
+		req_cached "/transactions/data$query"
+	else
+		while local timestamp=$(date +%s000)
+		do
+			req_try "/transactions/new_transactions?timestamp=${timestamp}"
+			sleep $watch_interval
+		done
+	fi | case $format in
 		simple) render_object transactions-simple;;
 		ledger) render_object transactions-ledger;;
 		esac
-	}
+}
 
 simple_linked_accounts() {
 	req_cached '/linked-accounts' | render_object linked-accounts

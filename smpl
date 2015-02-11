@@ -4,9 +4,9 @@ api_base='https://bank.simple.com';
 
 prog=$(basename "$0")
 prog_dir=$(dirname "$0")
-cookie_jar=~/.simpull_cookies.txt
+cookie_jar=~/.smpl_cookies.txt
 cookie_jar_checked=
-cache_dir="/tmp/simpull-$USER"
+cache_dir="/tmp/smpl-$USER"
 watch_interval=30
 
 opt_verbose=

@@ -104,7 +104,8 @@ clean_cache() {
 }
 
 simple_help() {
-	cat <<EOF
+	case "$1" in
+		'') cat <<EOF
 Usage: $prog <command> [options]
 Commands:
     help            Get help about commands
@@ -118,6 +119,49 @@ Options:
     -n --no-cache   Skip cache
     -r --raw        Return raw JSON
 EOF
+
+	;; card) cat <<EOF
+Usage: $prog $1
+
+Get info about a Simple card.
+EOF
+
+	;; balance) cat <<EOF
+Usage: $prog $1
+
+Get card balance (total, pending, and available)
+EOF
+
+	;; transactions) cat <<EOF
+Usage: $prog $1 [options]
+
+Get a listing of account transactions.
+
+Options:
+    -a --all        Show the entire transaction history rather than recent only
+    -f --follow     Show new transactions as they are posted
+    --format=...    Specify a format. Options are 'simple' and 'ledger'.
+EOF
+
+	;; linked-accounts) cat <<EOF
+Usage: $prog $1
+
+List linked accounts. Show their bank name, account type, routing number,
+and account number.
+EOF
+
+	;; clean-cache) cat <<EOF
+Usage: $prog $1
+
+Delete files for cached requests by $prog.
+EOF
+
+	;; *) cat <<EOF
+Unknown command '$1'. See '$prog help'.
+EOF
+	return 1
+	;;
+	esac
 }
 
 get_csrf() {
@@ -198,10 +242,10 @@ for arg; do
 		-n|--no-cache) opt_nocache=1;;
 		-r|--raw) opt_raw=1;;
 		--) args="$args ${@:i+1}"; break;;
-		-*) args="$args $arg";;
 		*)
 			if [[ -z "$cmd" ]]
 			then cmd="$arg"
+			else args="$args $arg"
 			fi
 	esac
 	((i++))

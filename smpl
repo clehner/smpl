@@ -55,6 +55,7 @@ check_cachedir() {
 		then
 			echo "Warning: $cache_dir has insecure permissions." >&2
 		fi
+
 		cache_dir_checked=1
 	fi
 }
@@ -85,8 +86,8 @@ req_try() {
 req_cached() {
 	check_cachedir
 
-	local path="$1"
-	local cache_file="$cache_dir${path//\//-}"
+	local path="${1#/}"
+	local cache_file="$cache_dir/${path//\//-}"
 	if [[ -z "$opt_nocache" && -s "$cache_file" ]]
 	then cat "$cache_file"
 	else req_try $@ | tee "$cache_file"

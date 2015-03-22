@@ -81,7 +81,7 @@ req_try() {
 		99)
 			# Log in and retry the request
 			signin
-			req $@
+			req_try $@
 	esac
 }
 
@@ -185,14 +185,14 @@ signin() {
 
 	if [[ -n "$SIMPLE_USERNAME" ]]
 	then username="$SIMPLE_USERNAME"
-	else read -p 'Username: ' username
+	else read -rp 'Username: ' username
 	fi
 
 	if [[ -n "$SIMPLE_PASSWORD" ]]
 	then password="$SIMPLE_PASSWORD"
 	elif [[ -n "$SIMPLE_PASSCMD" ]]
 	then password="$(sh -c "$SIMPLE_PASSCMD")"
-	else read -rsp 'Passphrase: ' password; echo
+	else read -rsp 'Passphrase: ' password; echo >&2
 	fi
 
 	req '/signin' \

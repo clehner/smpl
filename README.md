@@ -21,40 +21,49 @@ make install
 **smpl** has a subcommand for each operation. For complete reference, check the
 man page.
 
-### List transactions
+- List transactions
 ```
 smpl transactions
 ```
 
-#### in [ledger](http://ledger-cli.org/) format:
+	- in [ledger](http://ledger-cli.org/) format:
 ```
 smpl transactions --format=ledger
 ```
 
-### Get account balance
+- Get account balance
 ```
 smpl balance
 ```
 
-### Get card status
+- Get card status
 ```
 smpl card
 ```
 
-### Show linked accounts
+- Show linked accounts
 ```
 smpl linked-accounts
 ```
 
-### Get help about a command
+- Get help about a command
 ```
 smpl help [command]
 ```
 
-### List linked accounts and their details
+- List linked accounts and their details
 ```
 smpl linked-accounts
 ```
+
+### Authentication
+By default, **smpl** will ask you for a username and password when you run a
+command for which it needs you to log in. To make it quicker to log in, you
+can set the environmental variables `SIMPLE_USERNAME` and `SIMPLE_PASSWORD`.
+If you use a password manager such as [pass](http://www.passwordstore.org/),
+you can skip `SIMPLE_PASSWORD` and set the password by setting
+`SIMPLE_PASSCMD` to be a command that outputs the password, which **smpl**
+will then run as needed.
 
 ## License
 MIT

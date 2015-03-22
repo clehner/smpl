@@ -93,7 +93,9 @@ req_cached() {
 	local cache_file="$cache_dir/${path//\//-}"
 	if [[ -z "$opt_nocache" && -s "$cache_file" ]]
 	then cat "$cache_file"
-	else req_try $@ | tee "$cache_file"
+	else
+		trap "rm $cache_file" SIGHUP SIGINT SIGTERM
+		req_try $@ | tee "$cache_file"
 	fi
 }
 

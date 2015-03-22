@@ -50,5 +50,9 @@ If you use a password manager such as [pass](http://www.passwordstore.org/),
 you can instead set the password by setting `SIMPLE_PASSCMD` to be a command
 that outputs the password, which **smpl** will then run as needed.
 
+## Todo
+
+- Implement initiating transfers to/from external accounts
+
 ## License
 MIT

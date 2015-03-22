@@ -2,6 +2,7 @@ BIN = smpl
 PREFIX ?= /usr/local
 DESTDIR ?=
 BINDIR ?= $(PREFIX)/bin
+LIBDIR ?= $(PREFIX)/lib
 MANDIR ?= $(PREFIX)/share/man
 CP ?= cp
 
@@ -15,8 +16,17 @@ all:
 
 install-bin:
 	@mkdir -p $(DESTDIR)$(BINDIR)
+ifdef LINK
 	@$(CP) -vf $(BIN) $(DESTDIR)$(BINDIR)
+else
+	sed 's:^lib_dir=.*:lib_dir="$(DESTDIR)$(LIBDIR)/$(BIN)":' \
+		$(BIN) > $(DESTDIR)$(BINDIR)/$(BIN)
+endif
 	@chmod 755 $(DESTDIR)$(BINDIR)/$(BIN)
+
+install-lib:
+	@mkdir -p $(DESTDIR)$(LIBDIR)
+	@$(CP) -rvf lib $(DESTDIR)$(LIBDIR)/$(BIN)
 
 install-man:
 	@mkdir -p $(DESTDIR)$(MANDIR)/man1
@@ -28,10 +38,11 @@ install-comp:
 	@$(CP) -vf completion/_$(BIN).bash $(BASHCOMP_PATH)/$(BIN)
 	@chmod 644 $(BASHCOMP_PATH)/$(BIN)
 
-install: install-bin install-man install-comp
+install: install-bin install-lib install-man install-comp
 
 uninstall:
 	@rm -vrf \
 		"$(DESTDIR)$(BINDIR)/$(BIN)" \
+		"$(DESTDIR)$(LIBDIR)/$(BIN)" \
 		"$(DESTDIR)$(MANDIR)/man1/$(BIN).1" \
 		"$(BASHCOMP_PATH)/$(BIN)"

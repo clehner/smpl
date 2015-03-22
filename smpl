@@ -3,7 +3,7 @@
 api_base='https://bank.simple.com';
 
 prog=$(basename "$0")
-prog_dir=$(dirname "$0")
+lib_dir=$(dirname $([ -L $0 ] && readlink -f $0 || echo $0))
 cookie_jar=${SIMPLE_COOKIEJAR:-~/.smpl_cookies.txt}
 cookie_jar_checked=
 cache_dir="/tmp/smpl-$USER"
@@ -100,7 +100,7 @@ req_cached() {
 render_object() {
 	[[ $opt_raw ]] && exec cat
 
-	awk -f "$prog_dir/"json.awk -f "$prog_dir/view/$1"
+	awk -f "$lib_dir/"json.awk -f "$lib_dir/view/$1"
 }
 
 # Empty the cache

@@ -141,8 +141,8 @@ Get a listing of account transactions.
 Options:
     -a --all        Show the entire transaction history rather than recent only
     -f --follow     Show new transactions as they are posted
-    --format=...    Specify a format. Options are 'simple' and 'ledger'.
-    --since=...     Show transactions from the past number of hours
+    --format=TYPE   Specify a format. Options are 'simple' and 'ledger'.
+    --since=NUMBER  Show transactions from the past number of hours
 EOF
 
 	;; linked-accounts) cat <<EOF
@@ -270,7 +270,7 @@ done
 set -- "$args"
 
 case "$cmd" in
-	help|'') simple_help $@;;
+	help|--help|'') simple_help $@;;
 	card) simple_card $@;;
 	balance) simple_balance $@;;
 	transactions) simple_transactions $@;;

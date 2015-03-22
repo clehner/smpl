@@ -21,40 +21,26 @@ make install
 **smpl** has a subcommand for each operation. For complete reference, check the
 man page.
 
-- List transactions
-```
-smpl transactions
-```
+- List transactions: `smpl transactions`
+  - in [ledger](http://ledger-cli.org/) format: `--format=ledger`
+  - show all transactions: `--all`
+  - show transactions as they are made: `--follow`
+  - show transactions from the past N hours: `--since=N`
 
-	- in [ledger](http://ledger-cli.org/) format:
-```
-smpl transactions --format=ledger
-```
+- Get account balance: `smpl balance`
 
-- Get account balance
-```
-smpl balance
-```
+- Get card status: `smpl card`
 
-- Get card status
-```
-smpl card
-```
+- Show linked accounts: `smpl linked-accounts`
 
-- Show linked accounts
-```
-smpl linked-accounts
-```
+- Get help about a command: `smpl help [command]`
 
-- Get help about a command
-```
-smpl help [command]
-```
+- List linked accounts and their details: `smpl linked-accounts`
 
-- List linked accounts and their details
-```
-smpl linked-accounts
-```
+- Options:
+  - show raw JSON: `--raw`
+  - skip cached results: `--no-cache`
+  - get more debug info: `--verbose`
 
 ### Authentication
 By default, **smpl** will ask you for a username and password when you run a

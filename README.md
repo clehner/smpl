@@ -9,7 +9,7 @@ and linked accounts.
 ## Installation
 
 - Make sure you have `curl(1)`.
-- Clone the repo and install smpl.
+- Clone the repo and install smpl:
 ```
 git clone https://github.com/clehner/smpl.git
 cd smpl
@@ -17,19 +17,43 @@ make install
 ```
 
 ## Usage
+
+**smpl** has a subcommand for each operation. For complete reference, check the
+man page.
+
+### List transactions
 ```
-Usage: smpl <command> [options]
-Commands:
-    help            Get help about commands
-    card            Get card info
-    balance         Get balance
-    linked-accounts Get linked accounts
-    transactions    Get transactions
-    clean           Empty the cache
-Options:
-    -v --verbose    Be more verbose
-    -n --no-cache   Skip cache
-    -r --raw        Return raw JSON
+smpl transactions
+```
+
+#### in [ledger](http://ledger-cli.org/) format:
+```
+smpl transactions --format=ledger
+```
+
+### Get account balance
+```
+smpl balance
+```
+
+### Get card status
+```
+smpl card
+```
+
+### Show linked accounts
+```
+smpl linked-accounts
+```
+
+### Get help about a command
+```
+smpl help [command]
+```
+
+### List linked accounts and their details
+```
+smpl linked-accounts
 ```
 
 ## License

@@ -6,7 +6,7 @@ BEGIN {
 	len = split($0, items, /,"/)
 	if (len > 1) {
 		sub(/^{"/, "", items[1])
-		sub(/}$/, "", items[len])
+		sub(/}\s*$/, "", items[len])
 	}
 	for (i = 1; i <= len; i++) {
 		item = items[i]

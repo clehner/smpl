@@ -56,6 +56,9 @@ check_cachedir() {
 			echo "Warning: $cache_dir has insecure permissions." >&2
 		fi
 
+		# clean out the cache dir. delete files older than one day
+		find "$cache_dir" -mtime +0 -exec echo rm {} \+
+
 		cache_dir_checked=1
 	fi
 }

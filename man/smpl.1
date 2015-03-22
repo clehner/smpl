@@ -1,0 +1,138 @@
+.TH SMPL 1 "2015 March 22" CEL "smpl"
+
+.SH NAME
+smpl \- access a Simple bank account
+
+.SH SYNOPSIS
+.B smpl
+[ 
+.I COMMAND
+] [ 
+.I OPTIONS
+]... [ 
+.I ARGS
+]...
+
+.SH DESCRIPTION
+.B smpl
+is an unofficial client for simple.com's API.
+The
+.B smpl
+utility provides a series of commands for retrieving account data and
+transactions from a Simple account.
+
+There is a corresponding bash completion script for use with tab completing
+commands and options in
+.BR bash (1).
+
+\fBsmpl\fR is not a product of Simple
+Finance Technology Corp. or The Bancorp Bank.
+
+.SH COMMANDS
+.TP
+\fBbalance\fP
+Get the balance of your account, including account total, pending charges, and
+available balance.
+.TP
+\fBcard\fP
+Show the status of your debit card.
+.TP
+\fBlinked-accounts\fP
+Get a list of bank accounts linked to your Simple account.
+.TP
+\fBtransactions\fP
+Get a list of recent transactions. See also \fBTRANSACTIONS OPTIONS\fP.
+.TP
+\fBclean-cache\fP
+Delete cached server data
+.TP
+\fBhelp\fP \fIcommand\fP
+Get info about a command
+
+.SH OPTIONS
+.TP
+.BI "-v, --verbose"
+Give more output.
+.TP
+.BI "-n, --no-cache"
+Skip cache and make a live request.
+.TP
+.BI "-r, --raw"
+Show raw JSON data instead of formatting the response.
+.SS "TRANSACTIONS OPTIONS"
+.TP
+.BI "-a, --all"
+Show all transactions, rather than only the most recent.
+.TP
+.BI "--format=" "format"
+Specify the output format.  The format may be \fIsimple\fR (the default) to include the exact date and
+running balance, or \fIledger\fR to produce an output readable by
+.BR ledger (1)
+.
+.TP
+.BI "--since=" "hours"
+Show only transactions from in the past given number of hours.
+
+.SH ENVIRONMENT
+.TP
+.I SIMPLE_USERNAME
+Use the given account username to log in with, instead of prompting for a
+username interactively.
+.TP
+.I SIMPLE_PASSWORD
+Use the given password for logging in. If this variable is empty or not set, 
+.B smpl
+will prompt for a password to log in.
+.TP
+.I SIMPLE_PASSCMD
+If set, this shell fragment will be run and the output used as the password for
+logging in. This overrides the \fISIMPLE_PASSWORD\fP variable.
+.TP
+.I SIMPLE_COOKIEJAR
+Override the default location (\fI~/.smpl_cookies.txt\fR) for storing
+session cookies.
+
+.SH FILES
+.TP
+.B ~/.smpl_cookies.txt
+Contains session cookies used for communicating with simple.com. The filename
+used may be changed by setting \fISIMPLE_COOKIEJAR\fP to another filename.
+.TP
+.B /tmp/smpl-$USER
+Contains cached responses to server requests. This may be cleaned out using the
+\fBclean-cache\fB command.
+
+.SH AUTHORS
+.B smpl
+was written by
+.MT cel@celehner.com
+Charles Lehner
+.ME .
+For updates and more information, see
+.UR http://\:github.com/clehner/smpl
+.UE .
+
+.SH BUGS
+The JSON parsing is not completely correct and may break if the format of the
+output from the server changes.
+
+.SH COPYING
+Copyright © 2015 Charles Lehner
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the “Software”), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

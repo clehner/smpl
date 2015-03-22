@@ -125,6 +125,13 @@ Options:
     -v --verbose    Be more verbose
     -n --no-cache   Skip cache
     -r --raw        Return raw JSON
+    -h --help       Get help about commands
+EOF
+
+	;; help) cat <<EOF
+Usage: $prog $1 [command]
+
+Get info about a $prog subcommand
 EOF
 
 	;; card) cat <<EOF
@@ -264,6 +271,9 @@ for arg; do
 		-v|--verbose) opt_verbose=1;;
 		-n|--no-cache) opt_nocache=1;;
 		-r|--raw) opt_raw=1;;
+		-h|--help)
+			[[ -n "$cmd" ]] && args="$cmd"
+			cmd=help;;
 		--) args="$args ${@:i+1}"; break;;
 		*)
 			if [[ -z "$cmd" ]]
@@ -276,7 +286,7 @@ done
 set -- "$args"
 
 case "$cmd" in
-	help|--help|'') simple_help $@;;
+	help|'') simple_help $@;;
 	card) simple_card $@;;
 	balance) simple_balance $@;;
 	transactions) simple_transactions $@;;

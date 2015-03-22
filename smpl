@@ -142,6 +142,7 @@ Options:
     -a --all        Show the entire transaction history rather than recent only
     -f --follow     Show new transactions as they are posted
     --format=...    Specify a format. Options are 'simple' and 'ledger'.
+    --since=...     Show transactions from the past number of hours
 EOF
 
 	;; linked-accounts) cat <<EOF
@@ -208,6 +209,7 @@ simple_transactions() {
 	local query=
 	local format=simple
 	local opt_follow=
+	local opt_since=
 	for arg
 	do case "$arg" in
 		--all|-a) query='?all=true';;
@@ -216,9 +218,14 @@ simple_transactions() {
 		--format=ledger|-l) format=ledger;;
 		--format=*) echo "Unknown format ${arg#--format=}" >&2
 			return 1;;
+		--since=*) opt_since="${arg#--since=}";;
 	esac done
 
-	if [[ -z $opt_follow ]]
+	if [[ -n $opt_since ]]
+	then
+		local timestamp=$((($(date +%s) - opt_since * 3600) * 1000))
+		req_try "/transactions/new_transactions?timestamp=${timestamp}"
+	elif [[ -z $opt_follow ]]
 	then
 		req_cached "/transactions/data$query"
 	else
@@ -230,7 +237,7 @@ simple_transactions() {
 	fi | case $format in
 		simple) render_object transactions-simple;;
 		ledger) render_object transactions-ledger;;
-		esac
+	esac
 }
 
 simple_linked_accounts() {

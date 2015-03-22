@@ -3,7 +3,7 @@
 api_base='https://bank.simple.com';
 
 prog=$(basename "$0")
-lib_dir=$(dirname $([ -L $0 ] && readlink -f $0 || echo $0))
+lib_dir=$(dirname $([ -L $0 ] && readlink -f $0 || echo $0))/lib
 cookie_jar=${SIMPLE_COOKIEJAR:-~/.smpl_cookies.txt}
 cookie_jar_checked=
 cache_dir="/tmp/smpl-$USER"

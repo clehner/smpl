@@ -14,6 +14,9 @@ BASHCOMP_PATH ?= $(DESTDIR)$(PREFIX)/share/bash-completion/completions
 
 all:
 
+link:
+	@$(MAKE) --no-print-directory install LINK=1
+
 install-bin:
 	@mkdir -p $(DESTDIR)$(BINDIR)
 ifdef LINK

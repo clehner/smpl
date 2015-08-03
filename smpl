@@ -212,7 +212,9 @@ signin() {
 }
 
 simple_card() {
-	req_cached '/card' | render_object card
+	# using a bogus user id works
+	local userid=_
+	req_cached "/card-api/users/$userid/card_status" | render_object card
 }
 
 simple_balance()  {

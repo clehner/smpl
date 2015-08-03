@@ -118,6 +118,7 @@ Usage: $prog <command> [options]
 Commands:
     help            Get help about commands
     card            Get card info
+    account         Get account info
     balance         Get balance
     linked-accounts Get linked accounts
     transactions    Get transactions
@@ -157,6 +158,12 @@ Options:
     -f --follow     Show new transactions as they are posted
     --format=TYPE   Specify a format. Options are 'simple' and 'ledger'.
     --since=NUMBER  Show transactions from the past number of hours
+EOF
+
+	;; account) cat <<EOF
+Usage: $prog $1
+
+Get info about your Simple account. Shows your contact information.
 EOF
 
 	;; linked-accounts) cat <<EOF
@@ -215,6 +222,10 @@ simple_card() {
 	# using a bogus user id works
 	local userid=_
 	req_cached "/card-api/users/$userid/card_status" | render_object card
+}
+
+simple_account() {
+	req_cached '/user-api/users/_' | render_object account
 }
 
 simple_balance()  {
@@ -293,6 +304,7 @@ case "$cmd" in
 	card) simple_card $@;;
 	balance) simple_balance $@;;
 	transactions) simple_transactions $@;;
+	account) simple_account $@;;
 	linked-accounts) simple_linked_accounts $@;;
 	clean-cache) clean_cache $@;;
 	*) invalid_command $cmd;;

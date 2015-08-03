@@ -2,7 +2,7 @@
 
 _smpl_command()
 {
-    COMPREPLY=( $( compgen -W 'help card balance transactions
+    COMPREPLY=( $( compgen -W 'help card balance transactions account
         linked-accounts clean-cache ' -- "$cur" ) )
 }
 

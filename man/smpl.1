@@ -1,18 +1,15 @@
 .TH SMPL 1 "2015-08-02" CEL "smpl"
-
 .SH NAME
 smpl \- access a Simple bank account
-
 .SH SYNOPSIS
 .B smpl
-[ 
+[
 .I COMMAND
-] [ 
+] [
 .I OPTIONS
-]... [ 
+]... [
 .I ARGS
 ]...
-
 .SH DESCRIPTION
 .B smpl
 is an unofficial client for simple.com's API.
@@ -20,14 +17,11 @@ The
 .B smpl
 utility provides a series of commands for retrieving account data and
 transactions from a Simple account.
-
 There is a corresponding bash completion script for use with tab completing
 commands and options in
 .BR bash (1).
-
 \fBsmpl\fR is not a product of Simple
 Finance Technology Corp. or The Bancorp Bank.
-
 .SH COMMANDS
 .TP
 \fBbalance\fP
@@ -51,7 +45,6 @@ Delete cached server data
 .TP
 \fBhelp\fP \fIcommand\fP
 Get info about a command
-
 .SH OPTIONS
 .TP
 .BI "-v, --verbose"
@@ -81,7 +74,6 @@ running balance, or \fIledger\fR to produce an output readable by
 .TP
 .BI "--since=" "hours"
 Show only transactions from in the past given number of hours.
-
 .SH ENVIRONMENT
 .TP
 .I SIMPLE_USERNAME
@@ -89,7 +81,7 @@ Use the given account username to log in with, instead of prompting for a
 username interactively.
 .TP
 .I SIMPLE_PASSWORD
-Use the given password for logging in. If this variable is empty or not set, 
+Use the given password for logging in. If this variable is empty or not set,
 .B smpl
 will prompt for a password to log in.
 .TP
@@ -102,7 +94,6 @@ This overrides the \fISIMPLE_PASSWORD\fP variable.
 .I SIMPLE_COOKIEJAR
 Override the default location (\fI~/.smpl_cookies.txt\fR) for storing
 session cookies.
-
 .SH FILES
 .TP
 .B ~/.smpl_cookies.txt
@@ -113,7 +104,6 @@ used may be changed by setting \fISIMPLE_COOKIEJAR\fP to another filename.
 Contains cached responses to server requests. This may be cleaned out using the
 \fBclean-cache\fR command or will be removed automatically by \fBsmpl\fR when
 they get too old.
-
 .SH AUTHORS
 .B smpl
 was written by
@@ -121,27 +111,25 @@ was written by
 Charles Lehner
 .ME .
 For updates and more information, see
-.UR http://\:github.com/clehner/smpl
+.UR http://github.com/clehner/smpl
 .UE .
-
 .SH BUGS
 The JSON parsing is not completely correct and may break if the format of the
 output from the server changes.
-
 .SH COPYING
-Copyright © 2015 Charles Lehner
-
+Copyright \(co 2015 Charles Lehner
+.PP
 Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the “Software”), to deal in
+this software and associated documentation files (the "Software"), to deal in
 the Software without restriction, including without limitation the rights to
 use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
 of the Software, and to permit persons to whom the Software is furnished to do
 so, subject to the following conditions:
-
+.PP
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+.PP
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER

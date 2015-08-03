@@ -181,7 +181,7 @@ EOF
 }
 
 get_csrf() {
-	req '/signin' | sed -n 's/.*name="_csrf" content="\([^"]*\)\".*/\1/p'
+	req '/signin' | sed -n 's/.*value="\([^"]*\)\" name="_csrf".*/\1/p'
 }
 
 # Log in and validate the session.
@@ -216,7 +216,7 @@ simple_card() {
 }
 
 simple_balance()  {
-	req_cached '/account/balances' | render_object balance
+	req_cached '/api/account/balances' | render_object balance
 }
 
 simple_transactions() {
